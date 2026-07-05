@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Chekkam</title>
+<link rel="stylesheet" href="result.css" />
+<style>
+  body { width: 320px; margin: 0; font-family: Inter, system-ui, sans-serif; color: #1e293b; }
+  .chekkam-popup { padding: 16px; }
+  .chekkam-popup h1 { font-size: 15px; font-weight: 700; color: #028090; margin: 0 0 4px; }
+  .chekkam-popup p.sub { font-size: 12px; color: #64748b; margin: 0 0 12px; }
+  textarea {
+    width: 100%; min-height: 80px; border: 1px solid #e2e8e7; border-radius: 8px;
+    padding: 8px; font-size: 13px; font-family: inherit; resize: vertical;
+  }
+  button.primary {
+    width: 100%; margin-top: 8px; padding: 8px; background: #028090; color: white;
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  button.primary:disabled { opacity: 0.6; cursor: default; }
+  .chekkam-result-card { position: static; width: auto; margin-top: 12px; box-shadow: none; padding: 12px; }
+  details.settings { margin-top: 12px; font-size: 11px; color: #64748b; }
+  details.settings input {
+    width: 100%; margin-top: 4px; padding: 4px 6px; font-size: 11px;
+    border: 1px solid #e2e8e7; border-radius: 6px; box-sizing: border-box;
+  }
+  details.settings button { margin-top: 4px; font-size: 11px; padding: 4px 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div class="chekkam-popup">
+    <h1>Chekkam</h1>
+    <p class="sub">Paste a message to check</p>
+    <textarea id="content" placeholder="Paste a suspicious message or link here..."></textarea>
+    <button id="check-button" class="primary">Check</button>
+    <div id="result-container"></div>
+
+    <details class="settings">
+      <summary>Backend URL (dev only)</summary>
+      <input id="backend-url" type="text" placeholder="http://localhost:3000" />
+      <button id="save-backend-url">Save</button>
+    </details>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
