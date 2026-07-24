@@ -1,13 +1,13 @@
-/* Chekkam brand-styled result card — tokens from Chekkam_Brand_Guide.md */
+/* Chekkam brand-styled result card — tokens from Chekkam_Brand_Guide.md v3 */
 :root {
-  --chekkam-primary: #028090;
-  --chekkam-ink: #1e293b;
-  --chekkam-muted: #64748b;
-  --chekkam-tint: #e9f5f4;
-  --status-success: #16a34a;
-  --status-warning: #f59e0b;
-  --status-danger: #dc2626;
-  --status-neutral: #64748b;
+  --chekkam-primary: #f21137;
+  --chekkam-ink: #030303;
+  --chekkam-muted: #4a4a4a;
+  --chekkam-tint: #f7f1f1;
+  --status-success: #1e8e5a;
+  --status-warning: #b5690f;
+  --status-danger: #68020f;
+  --status-neutral: #7c7272;
 }
 
 .chekkam-result-card {
@@ -20,7 +20,7 @@
   font-family: Inter, -apple-system, system-ui, sans-serif;
   background: #ffffff;
   color: var(--chekkam-ink);
-  border: 1px solid #e2e8e7;
+  border: 1px solid #e8dede;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
   padding: 16px;
