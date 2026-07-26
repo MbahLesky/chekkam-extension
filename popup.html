@@ -5,31 +5,41 @@
 <title>Chekkam</title>
 <link rel="stylesheet" href="result.css" />
 <style>
-  body { width: 320px; margin: 0; font-family: Inter, system-ui, sans-serif; color: #030303; }
+  /* Palette and radii mirror result.css (Brand Guide v4). Colors are taken
+     from the tokens result.css already defines on :root. */
+  body { width: 320px; margin: 0; font-family: system-ui, -apple-system, sans-serif; color: var(--chekkam-ink); }
   .chekkam-popup { padding: 16px; }
-  .chekkam-popup h1 { font-size: 15px; font-weight: 700; color: #f21137; margin: 0 0 4px; }
-  .chekkam-popup p.sub { font-size: 12px; color: #4a4a4a; margin: 0 0 12px; }
+  .chekkam-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .chekkam-brand img { width: 22px; height: auto; }
+  .chekkam-popup h1 { font-size: 15px; font-weight: 700; color: var(--chekkam-primary); margin: 0; }
+  .chekkam-popup p.sub { font-size: 12px; color: var(--chekkam-muted); margin: 0 0 12px; }
   textarea {
-    width: 100%; min-height: 80px; border: 1px solid #e8dede; border-radius: 8px;
+    width: 100%; min-height: 80px; border: 1px solid var(--chekkam-border); border-radius: 10px;
     padding: 8px; font-size: 13px; font-family: inherit; resize: vertical;
   }
+  textarea:focus { outline: 2px solid var(--chekkam-primary); outline-offset: -1px; }
+  /* Primary button uses the hero gradient per §7. */
   button.primary {
-    width: 100%; margin-top: 8px; padding: 8px; background: #f21137; color: white;
-    border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+    width: 100%; margin-top: 8px; padding: 9px; color: white;
+    background-image: linear-gradient(135deg, var(--chekkam-deep), var(--chekkam-primary));
+    border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
   }
   button.primary:disabled { opacity: 0.6; cursor: default; }
   .chekkam-result-card { position: static; width: auto; margin-top: 12px; box-shadow: none; padding: 12px; }
-  details.settings { margin-top: 12px; font-size: 11px; color: #4a4a4a; }
+  details.settings { margin-top: 12px; font-size: 11px; color: var(--chekkam-muted); }
   details.settings input {
     width: 100%; margin-top: 4px; padding: 4px 6px; font-size: 11px;
-    border: 1px solid #e8dede; border-radius: 6px; box-sizing: border-box;
+    border: 1px solid var(--chekkam-border); border-radius: 10px; box-sizing: border-box;
   }
   details.settings button { margin-top: 4px; font-size: 11px; padding: 4px 8px; cursor: pointer; }
 </style>
 </head>
 <body>
   <div class="chekkam-popup">
-    <h1>Chekkam</h1>
+    <div class="chekkam-brand">
+      <img src="icons/chekkam_icon.png" alt="" />
+      <h1>Chekkam</h1>
+    </div>
     <p class="sub">Paste a message to check</p>
     <textarea id="content" placeholder="Paste a suspicious message or link here..."></textarea>
     <button id="check-button" class="primary">Check</button>

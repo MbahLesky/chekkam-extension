@@ -1,12 +1,18 @@
-/* Chekkam brand-styled result card — tokens from Chekkam_Brand_Guide.md v3 */
+/* Chekkam brand-styled result card — tokens from Chekkam_Brand_Guide_v4.md.
+   Fonts use the guide's §4.1 fallback stack rather than Sora/Plus Jakarta
+   Sans: an injected content script cannot rely on remote webfonts (host page
+   CSP may block them), and bundling font files would bloat the extension. */
 :root {
-  --chekkam-primary: #f21137;
+  --chekkam-deep: #990000;
+  --chekkam-primary: #f15a29;
+  --chekkam-bright: #ff7a3d;
   --chekkam-ink: #030303;
   --chekkam-muted: #4a4a4a;
   --chekkam-tint: #f7f1f1;
+  --chekkam-border: #e8dede;
   --status-success: #1e8e5a;
-  --status-warning: #b5690f;
-  --status-danger: #68020f;
+  --status-warning: #a6790b;
+  --status-danger: #990000;
   --status-neutral: #7c7272;
 }
 
@@ -17,12 +23,12 @@
   right: 16px;
   z-index: 2147483647;
   width: 320px;
-  font-family: Inter, -apple-system, system-ui, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   background: #ffffff;
   color: var(--chekkam-ink);
-  border: 1px solid #e8dede;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--chekkam-border);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(3, 3, 3, 0.10), 0 2px 6px rgba(3, 3, 3, 0.06);
   padding: 16px;
   box-sizing: border-box;
 }
@@ -55,6 +61,8 @@
   padding: 4px;
 }
 
+/* Status badges: semantic color at ~12% opacity behind full-opacity text,
+   always alongside a label — never color alone (§3.2, §8). */
 .chekkam-badge {
   display: inline-flex;
   align-items: center;
@@ -66,10 +74,10 @@
   margin-bottom: 10px;
 }
 
-.chekkam-badge-low { background: rgba(22, 163, 74, 0.12); color: var(--status-success); }
-.chekkam-badge-medium { background: rgba(245, 158, 11, 0.12); color: var(--status-warning); }
-.chekkam-badge-high, .chekkam-badge-critical { background: rgba(220, 38, 38, 0.12); color: var(--status-danger); }
-.chekkam-badge-error { background: rgba(100, 116, 139, 0.12); color: var(--status-neutral); }
+.chekkam-badge-low { background: rgba(30, 142, 90, 0.12); color: var(--status-success); }
+.chekkam-badge-medium { background: rgba(166, 121, 11, 0.12); color: var(--status-warning); }
+.chekkam-badge-high, .chekkam-badge-critical { background: rgba(153, 0, 0, 0.12); color: var(--status-danger); }
+.chekkam-badge-error { background: rgba(124, 114, 114, 0.12); color: var(--status-neutral); }
 
 .chekkam-card-body {
   font-size: 13px;
@@ -88,6 +96,6 @@
   font-size: 11px;
   color: var(--chekkam-muted);
   background: var(--chekkam-tint);
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 8px;
 }
