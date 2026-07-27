@@ -6,7 +6,8 @@
   "permissions": ["contextMenus", "activeTab", "scripting", "storage"],
   "host_permissions": [
     "http://localhost:3000/*",
-    "http://127.0.0.1:3000/*"
+    "http://127.0.0.1:3000/*",
+    "https://chekkam-backend-production.up.railway.app/*"
   ],
   "background": { "service_worker": "background.js" },
   "action": { "default_popup": "popup.html", "default_icon": "icons/icon48.png" },

@@ -11,7 +11,58 @@
     return div.innerHTML;
   }
 
-  function renderCard(result, error) {
+  // Icon + colour + text on every badge — colour alone is never the signal
+  // (CLAUDE.md rule 9), mirroring components/ui/StatusBadge.tsx's tones.
+  const RISK_BADGE = {
+    low: { tone: "low", icon: "✓", label: "Low risk" },
+    medium: { tone: "medium", icon: "⚠", label: "Medium risk" },
+    high: { tone: "high", icon: "⛔", label: "High risk" },
+    critical: { tone: "high", icon: "⛔", label: "Critical risk" },
+  };
+
+  // Tones mirror lib/verify-status-style.ts's hero display: revoked is
+  // withdrawn-but-not-proven-fraudulent (neutral), tampered is the alarming
+  // red state.
+  const DOCUMENT_BADGE = {
+    genuine: { tone: "low", icon: "✓", label: "Genuine" },
+    tampered: { tone: "high", icon: "✕", label: "Tampered" },
+    revoked: { tone: "neutral", icon: "⊘", label: "Revoked" },
+    expired: { tone: "medium", icon: "⏱", label: "Expired" },
+    not_found: { tone: "neutral", icon: "?", label: "Not found" },
+  };
+
+  function badgeHtml({ tone, icon, label }) {
+    return `<span class="chekkam-badge chekkam-badge-${tone}"><span aria-hidden="true">${icon}</span>${escapeHtml(label)}</span>`;
+  }
+
+  function renderRiskResult(result) {
+    const badge = RISK_BADGE[result.risk_level] || RISK_BADGE.medium;
+    const topReason = (result.reasons && result.reasons[0]) || "";
+    return `
+      ${badgeHtml(badge)}
+      <div class="chekkam-card-body">${escapeHtml(topReason)}</div>
+      <div class="chekkam-card-action">${escapeHtml(result.recommended_action)}</div>
+      <div class="chekkam-card-note">Not a verdict — pending human review by a Chekkam analyst.</div>
+    `;
+  }
+
+  function renderDocumentResult(result) {
+    const badge = DOCUMENT_BADGE[result.status] || DOCUMENT_BADGE.not_found;
+    const details = [];
+    if (result.institution) details.push(result.institution);
+    if (result.document_type) details.push(result.document_type);
+    if (result.status === "revoked" && result.reason) details.push(`Reason: ${result.reason}`);
+    if (result.status === "expired" && result.expiry_date) {
+      details.push(`Expired ${new Date(result.expiry_date).toLocaleDateString()}`);
+    }
+    return `
+      ${badgeHtml(badge)}
+      <div class="chekkam-card-body">${escapeHtml(details.join(" · "))}</div>
+      <div class="chekkam-card-note">Cryptographic verification result — not an AI judgement.</div>
+    `;
+  }
+
+  function renderCard(result, error, kind) {
     const existing = document.getElementById("chekkam-result-card");
     if (existing) existing.remove();
 
@@ -19,30 +70,25 @@
     card.id = "chekkam-result-card";
     card.className = "chekkam-result-card";
 
+    let body;
     if (error) {
-      card.innerHTML = `
-        <div class="chekkam-card-header">
-          <span class="chekkam-card-title">Chekkam</span>
-          <button class="chekkam-card-close" aria-label="Close">×</button>
-        </div>
-        <span class="chekkam-badge chekkam-badge-error">Couldn't check</span>
+      body = `
+        ${badgeHtml({ tone: "error", icon: "⚠", label: "Couldn't check" })}
         <div class="chekkam-card-body">${escapeHtml(error)}</div>
       `;
+    } else if (kind === "document") {
+      body = renderDocumentResult(result);
     } else {
-      const level = result.risk_level || "medium";
-      const label = level.charAt(0).toUpperCase() + level.slice(1) + " risk";
-      const topReason = (result.reasons && result.reasons[0]) || "";
-      card.innerHTML = `
-        <div class="chekkam-card-header">
-          <span class="chekkam-card-title">Chekkam</span>
-          <button class="chekkam-card-close" aria-label="Close">×</button>
-        </div>
-        <span class="chekkam-badge chekkam-badge-${escapeHtml(level)}">${escapeHtml(label)}</span>
-        <div class="chekkam-card-body">${escapeHtml(topReason)}</div>
-        <div class="chekkam-card-action">${escapeHtml(result.recommended_action)}</div>
-        <div class="chekkam-card-note">Not a verdict — pending human review by a Chekkam analyst.</div>
-      `;
+      body = renderRiskResult(result);
     }
+
+    card.innerHTML = `
+      <div class="chekkam-card-header">
+        <span class="chekkam-card-title">Chekkam</span>
+        <button class="chekkam-card-close" aria-label="Close">×</button>
+      </div>
+      ${body}
+    `;
 
     document.body.appendChild(card);
     card.querySelector(".chekkam-card-close").addEventListener("click", () => card.remove());
@@ -51,7 +97,7 @@
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type === "CHEKKAM_SHOW_RESULT") {
-      renderCard(message.result, message.error);
+      renderCard(message.result, message.error, message.kind);
     }
   });
 })();

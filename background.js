@@ -1,5 +1,8 @@
 // Chekkam extension service worker — context menus + API calls (P2-31, P2-32).
-const DEFAULT_BACKEND_URL = "http://localhost:3000";
+// Defaults to the deployed backend: a real installed extension isn't running
+// alongside a local dev server. Anyone developing against a local backend
+// changes this from the popup's "Backend URL" field instead.
+const DEFAULT_BACKEND_URL = "https://chekkam-backend-production.up.railway.app";
 
 async function getBackendUrl() {
   const { backendUrl } = await chrome.storage.sync.get("backendUrl");
@@ -22,6 +25,15 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Check this page with Chekkam",
     contexts: ["page"],
   });
+  chrome.contextMenus.create({
+    id: "chekkam-verify-document",
+    title: "Verify this document with Chekkam",
+    contexts: ["image", "link"],
+    // targetUrlPatterns matches an <img>'s src (image context) or an <a>'s
+    // href (link context) — so this only appears for links/images that look
+    // like a signed document, not every link on the page.
+    targetUrlPatterns: ["*://*/*.pdf", "*://*/*.png", "*://*/*.jpg", "*://*/*.jpeg"],
+  });
 });
 
 /** Calls the free, no-API-key extension endpoint — same analyzeContent() engine as every other channel. */
@@ -39,12 +51,31 @@ async function checkContent(content, type) {
   return body;
 }
 
-/** Injects the brand-styled result card into the page (P2-33). */
-async function showResultInTab(tabId, result, error) {
+/** Calls the free, no-API-key document-verification endpoint for a
+ * right-clicked link/image — fetches it server-side, hashes it, and runs
+ * the exact same verifyByUpload() engine every other surface uses. */
+async function verifyDocument(fileUrl) {
+  const backendUrl = await getBackendUrl();
+  const response = await fetch(`${backendUrl}/api/extension/verify-document`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fileUrl }),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(body?.error?.message || `Chekkam verification failed (HTTP ${response.status}).`);
+  }
+  return body;
+}
+
+/** Injects the brand-styled result card into the page (P2-33).
+ * kind is "risk" for a content check or "document" for a verify-document
+ * result — result-card.js renders each with its own badge set. */
+async function showResultInTab(tabId, result, error, kind) {
   try {
     await chrome.scripting.insertCSS({ target: { tabId }, files: ["result.css"] });
     await chrome.scripting.executeScript({ target: { tabId }, files: ["result-card.js"] });
-    await chrome.tabs.sendMessage(tabId, { type: "CHEKKAM_SHOW_RESULT", result, error });
+    await chrome.tabs.sendMessage(tabId, { type: "CHEKKAM_SHOW_RESULT", result, error, kind });
   } catch (err) {
     // Some pages (chrome://, the Web Store, etc.) don't allow script injection —
     // fail quietly rather than showing the user a confusing error there.
@@ -54,6 +85,18 @@ async function showResultInTab(tabId, result, error) {
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (!tab?.id) return;
+
+  if (info.menuItemId === "chekkam-verify-document") {
+    const fileUrl = info.srcUrl || info.linkUrl;
+    if (!fileUrl) return;
+    try {
+      const result = await verifyDocument(fileUrl);
+      await showResultInTab(tab.id, result, null, "document");
+    } catch (err) {
+      await showResultInTab(tab.id, null, err.message || String(err), "document");
+    }
+    return;
+  }
 
   let content;
   let type;
@@ -73,9 +116,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
   try {
     const result = await checkContent(content, type);
-    await showResultInTab(tab.id, result, null);
+    await showResultInTab(tab.id, result, null, "risk");
   } catch (err) {
-    await showResultInTab(tab.id, null, err.message || String(err));
+    await showResultInTab(tab.id, null, err.message || String(err), "risk");
   }
 });
 

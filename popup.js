@@ -14,6 +14,19 @@ function detectType(content) {
   return /^https?:\/\/\S+$/i.test(content.trim()) ? "link" : "text";
 }
 
+// Icon + colour + text on every badge — colour alone is never the signal
+// (CLAUDE.md rule 9), mirroring result-card.js and components/ui/StatusBadge.tsx.
+const RISK_BADGE = {
+  low: { tone: "low", icon: "✓", label: "Low risk" },
+  medium: { tone: "medium", icon: "⚠", label: "Medium risk" },
+  high: { tone: "high", icon: "⛔", label: "High risk" },
+  critical: { tone: "high", icon: "⛔", label: "Critical risk" },
+};
+
+function badgeHtml({ tone, icon, label }) {
+  return `<span class="chekkam-badge chekkam-badge-${tone}"><span aria-hidden="true">${icon}</span>${escapeHtml(label)}</span>`;
+}
+
 function renderResult(result, error) {
   resultContainer.innerHTML = "";
   const card = document.createElement("div");
@@ -21,15 +34,14 @@ function renderResult(result, error) {
 
   if (error) {
     card.innerHTML = `
-      <span class="chekkam-badge chekkam-badge-error">Couldn't check</span>
+      ${badgeHtml({ tone: "error", icon: "⚠", label: "Couldn't check" })}
       <div class="chekkam-card-body">${escapeHtml(error)}</div>
     `;
   } else {
-    const level = result.risk_level || "medium";
-    const label = level.charAt(0).toUpperCase() + level.slice(1) + " risk";
+    const badge = RISK_BADGE[result.risk_level] || RISK_BADGE.medium;
     const topReason = (result.reasons && result.reasons[0]) || "";
     card.innerHTML = `
-      <span class="chekkam-badge chekkam-badge-${escapeHtml(level)}">${escapeHtml(label)}</span>
+      ${badgeHtml(badge)}
       <div class="chekkam-card-body">${escapeHtml(topReason)}</div>
       <div class="chekkam-card-action">${escapeHtml(result.recommended_action)}</div>
       <div class="chekkam-card-note">Not a verdict — pending human review by a Chekkam analyst.</div>

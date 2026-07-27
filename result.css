@@ -76,8 +76,8 @@
 
 .chekkam-badge-low { background: rgba(30, 142, 90, 0.12); color: var(--status-success); }
 .chekkam-badge-medium { background: rgba(166, 121, 11, 0.12); color: var(--status-warning); }
-.chekkam-badge-high, .chekkam-badge-critical { background: rgba(153, 0, 0, 0.12); color: var(--status-danger); }
-.chekkam-badge-error { background: rgba(124, 114, 114, 0.12); color: var(--status-neutral); }
+.chekkam-badge-high { background: rgba(153, 0, 0, 0.12); color: var(--status-danger); }
+.chekkam-badge-neutral, .chekkam-badge-error { background: rgba(124, 114, 114, 0.12); color: var(--status-neutral); }
 
 .chekkam-card-body {
   font-size: 13px;
