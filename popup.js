@@ -84,3 +84,27 @@ saveBackendUrlButton.addEventListener("click", () => {
     setTimeout(() => (saveBackendUrlButton.textContent = "Save"), 1500);
   });
 });
+
+// Social-feed badges opt-in (FR-093) — off by default; auto-flag is nested
+// under (and disabled without) the base toggle.
+const socialBadgesToggle = document.getElementById("social-badges-toggle");
+const socialAutoflagToggle = document.getElementById("social-autoflag-toggle");
+
+chrome.storage.sync.get(["socialBadgesEnabled", "socialAutoFlagEnabled"], (stored) => {
+  socialBadgesToggle.checked = !!stored.socialBadgesEnabled;
+  socialAutoflagToggle.checked = !!stored.socialAutoFlagEnabled;
+  socialAutoflagToggle.disabled = !stored.socialBadgesEnabled;
+});
+
+socialBadgesToggle.addEventListener("change", () => {
+  socialAutoflagToggle.disabled = !socialBadgesToggle.checked;
+  if (!socialBadgesToggle.checked) socialAutoflagToggle.checked = false;
+  chrome.storage.sync.set({
+    socialBadgesEnabled: socialBadgesToggle.checked,
+    socialAutoFlagEnabled: socialAutoflagToggle.checked,
+  });
+});
+
+socialAutoflagToggle.addEventListener("change", () => {
+  chrome.storage.sync.set({ socialAutoFlagEnabled: socialAutoflagToggle.checked });
+});

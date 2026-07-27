@@ -99,3 +99,43 @@
   border-radius: 10px;
   padding: 8px;
 }
+
+/* Inline social-feed controls (FR-093) — small enough to sit inside a post
+   without disrupting the host page's own layout. */
+.chekkam-inline-wrapper,
+.chekkam-inline-autoflag {
+  all: initial;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 4px 0;
+}
+
+.chekkam-inline-wrapper * ,
+.chekkam-inline-autoflag * {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.chekkam-inline-check-btn {
+  cursor: pointer;
+  background: var(--chekkam-tint);
+  color: var(--chekkam-primary);
+  border: 1px solid var(--chekkam-border);
+  border-radius: 9999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.chekkam-inline-check-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.chekkam-inline-result .chekkam-badge,
+.chekkam-inline-autoflag .chekkam-badge {
+  padding: 2px 10px;
+  font-size: 11px;
+}

@@ -46,6 +46,22 @@
     <div id="result-container"></div>
 
     <details class="settings">
+      <summary>Social feed badges (beta)</summary>
+      <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+        <input id="social-badges-toggle" type="checkbox" style="width:auto; margin:0;" />
+        Show a "Check" button on Facebook/X/TikTok posts
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+        <input id="social-autoflag-toggle" type="checkbox" style="width:auto; margin:0;" />
+        Auto-flag suspicious posts while scrolling
+      </label>
+      <p style="margin: 6px 0 0; font-size: 10px;">
+        Off by default. Never runs inside the Facebook/TikTok mobile apps —
+        desktop web feeds only.
+      </p>
+    </details>
+
+    <details class="settings">
       <summary>Backend URL (dev only)</summary>
       <input id="backend-url" type="text" placeholder="http://localhost:3000" />
       <button id="save-backend-url">Save</button>

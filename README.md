@@ -33,6 +33,32 @@ way — no changes needed to use this folder there instead.
   and mobile apps, returning Genuine, Tampered, Revoked, Expired, or Not
   found (never colour alone — every result has an icon and text label too).
 - **Click the toolbar icon** for the popup: paste a message and press Check.
+- **Inline social-feed badges (FR-093, opt-in, off by default)** — enable
+  "Show a Check button on Facebook/X/TikTok posts" in the popup and a small
+  "Check with Chekkam" button appears next to posts as you scroll those
+  three sites (desktop web only — this cannot and does not run inside their
+  native mobile apps, which sandbox extensions out entirely). A second
+  opt-in toggle, "Auto-flag suspicious posts while scrolling", additionally
+  runs a check on every newly-visible post automatically and only adds a
+  badge when the result comes back medium/high/critical risk — it flags
+  suspicious posts, it doesn't label every post you scroll past. Auto-flag
+  checks are throttled to roughly one every 2.5 seconds so it stays well
+  inside the existing per-IP rate limit.
+
+  Selector caveat: X/Twitter's `data-testid="tweet"`/`"tweetText"` attributes
+  are long-standing and community-documented, so that integration is the
+  most likely to keep working as-is. Facebook's `[role="article"]` is a
+  stable ARIA landmark, but Facebook has no equivalent stable text selector,
+  so the post's full `innerText` is used as a best-effort fallback. TikTok's
+  `data-e2e` attributes are the least stable of the three and change more
+  often. All three selectors are unverified against live, current production
+  markup — this was proven against a local fixture mirroring X's real DOM
+  shape (manual button + auto-flag badge both confirmed working end-to-end,
+  including a real backend check call), not against facebook.com/x.com/
+  tiktok.com themselves. If a selector stops matching after a platform
+  redesign, the fix is a one-line update to `PLATFORM_CONFIG` in
+  `social-badges.js` — the detection/check/render mechanism itself doesn't
+  need to change.
 
 Every content-check result card shows the risk level, the top reason, the
 recommended action, and a note that it's pending human review — never
@@ -64,13 +90,15 @@ at a local dev server instead (`npm run dev` in `../chekkam-backend`, default
 ## Files
 
 ```
-manifest.json      Manifest V3 config — permissions, icons, background/popup entry points
+manifest.json      Manifest V3 config — permissions, icons, background/popup/content-script entry points
 background.js      Service worker: registers context menus, calls /api/extension/check
                     and /api/extension/verify-document
 result-card.js      Injected into the active tab to render the result card
                     (content-check risk badges and document-verification badges)
-popup.html/popup.js Toolbar popup: paste-a-message-to-check box
-result.css          Shared brand-styled result card CSS (used by both the popup and the injected card)
+social-badges.js    Declarative content script on facebook.com/x.com/twitter.com/tiktok.com
+                    (FR-093, opt-in) — per-post Check button + auto-flag mode
+popup.html/popup.js Toolbar popup: paste-a-message-to-check box, backend URL, social-badges opt-in toggles
+result.css          Shared brand-styled result/badge CSS (popup, injected card, and inline social badges)
 icons/              16/48/128px Chekkam check-in-circle icon
 ```
 
@@ -87,3 +115,7 @@ icons/              16/48/128px Chekkam check-in-circle icon
   detection, same as any other channel — see `../chekkam-backend`'s
   `DOCUMENTATION.md`. Document verification only reads the existing
   verification registry; it does not create a report.
+- Inline social-feed badges are off by default and never scrape private
+  messages/DMs — the content script only targets public feed post
+  containers. Auto-flag mode sends the same post text a manual click would
+  send; it does not read anything beyond what's already visible on screen.
