@@ -32,6 +32,13 @@ way — no changes needed to use this folder there instead.
   hashes it, and runs the exact same document-verification engine as the web
   and mobile apps, returning Genuine, Tampered, Revoked, Expired, or Not
   found (never colour alone — every result has an icon and text label too).
+- **Right-click a video, audio clip, image, or public post link** → "Check
+  this media source with Chekkam" → Chekkam checks whether that URL is a
+  verified official publisher source (including BBC and CRTV domains, plus
+  organisations registered by Chekkam). A source match is deliberately not
+  presented as proof that every claim in the media is true. Browser extensions
+  work on desktop pages; native mobile apps do not permit browser extensions,
+  so the Android Chekkam app handles those through its system Share target.
 - **Click the toolbar icon** for the popup: paste a message and press Check.
 - **Inline social-feed badges (FR-093, opt-in, off by default)** — enable
   "Show a Check button on Facebook/X/TikTok posts" in the popup and a small
@@ -91,10 +98,10 @@ at a local dev server instead (`npm run dev` in `../chekkam-backend`, default
 
 ```
 manifest.json      Manifest V3 config — permissions, icons, background/popup/content-script entry points
-background.js      Service worker: registers context menus, calls /api/extension/check
-                    and /api/extension/verify-document
+background.js      Service worker: registers context menus, calls /api/extension/check,
+                    /api/extension/verify-document, and /api/media/check
 result-card.js      Injected into the active tab to render the result card
-                    (content-check risk badges and document-verification badges)
+                    (content-check, document-verification, and media-source badges)
 social-badges.js    Declarative content script on facebook.com/x.com/twitter.com/tiktok.com
                     (FR-093, opt-in) — per-post Check button + auto-flag mode
 popup.html/popup.js Toolbar popup: paste-a-message-to-check box, backend URL, social-badges opt-in toggles
@@ -111,6 +118,9 @@ icons/              16/48/128px Chekkam check-in-circle icon
   and internal addresses are refused) and never stores the file itself.
 - No API key or account needed — both checks are free citizen-tier features,
   rate-limited server-side by IP (Phase 2 spec §6.1).
+- "Check this media source" sends only the clicked public media/link URL. It
+  does not upload the page, video, or private messages, and returns source
+  provenance separately from any AI-generation assessment.
 - Every content check is logged as an `extension`-channel report for campaign
   detection, same as any other channel — see `../chekkam-backend`'s
   `DOCUMENTATION.md`. Document verification only reads the existing

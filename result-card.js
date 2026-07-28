@@ -31,6 +31,11 @@
     not_found: { tone: "neutral", icon: "?", label: "Not found" },
   };
 
+  const MEDIA_BADGE = {
+    verified: { tone: "low", icon: "✓", label: "Official source verified" },
+    unverified: { tone: "neutral", icon: "?", label: "Source not verified" },
+  };
+
   function badgeHtml({ tone, icon, label }) {
     return `<span class="chekkam-badge chekkam-badge-${tone}"><span aria-hidden="true">${icon}</span>${escapeHtml(label)}</span>`;
   }
@@ -62,6 +67,22 @@
     `;
   }
 
+  function renderMediaResult(result) {
+    const source = result.source || null;
+    const verified = source?.status === "verified_official_source";
+    const badge = verified ? MEDIA_BADGE.verified : MEDIA_BADGE.unverified;
+    const sourceDetail = source?.detail || "No original public source was available to check.";
+    const ai = result.ai_generation || {};
+    const aiDetails = Array.isArray(ai.detail) ? ai.detail.join(" ") : ai.detail;
+    const aiDetail = aiDetails || "No AI-generation assessment was made from this link.";
+    return `
+      ${badgeHtml(badge)}
+      <div class="chekkam-card-body">${escapeHtml(sourceDetail)}</div>
+      <div class="chekkam-card-action">${escapeHtml(result.recommended_action || "Check the original publication and its context before sharing.")}</div>
+      <div class="chekkam-card-note">${escapeHtml(aiDetail)} A source match confirms where the link was published; it does not prove every claim in the media.</div>
+    `;
+  }
+
   function renderCard(result, error, kind) {
     const existing = document.getElementById("chekkam-result-card");
     if (existing) existing.remove();
@@ -78,6 +99,8 @@
       `;
     } else if (kind === "document") {
       body = renderDocumentResult(result);
+    } else if (kind === "media") {
+      body = renderMediaResult(result);
     } else {
       body = renderRiskResult(result);
     }

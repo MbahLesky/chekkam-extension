@@ -34,6 +34,13 @@ chrome.runtime.onInstalled.addListener(() => {
     // like a signed document, not every link on the page.
     targetUrlPatterns: ["*://*/*.pdf", "*://*/*.png", "*://*/*.jpg", "*://*/*.jpeg"],
   });
+  chrome.contextMenus.create({
+    id: "chekkam-check-media",
+    title: "Check this media source with Chekkam",
+    // srcUrl is available for images, audio, and video; link catches a
+    // public post/video URL where the platform does not expose its media src.
+    contexts: ["video", "audio", "image", "link"],
+  });
 });
 
 /** Calls the free, no-API-key extension endpoint — same analyzeContent() engine as every other channel. */
@@ -68,6 +75,35 @@ async function verifyDocument(fileUrl) {
   return body;
 }
 
+/**
+ * Checks whether a public media URL belongs to an official Chekkam-verified
+ * publisher. This is intentionally not the generic risk engine: it returns a
+ * source/AI Trust Report and never represents a publisher match as proof that
+ * every claim in a video is true.
+ */
+async function checkMediaSource(url) {
+  const backendUrl = await getBackendUrl();
+  const response = await fetch(`${backendUrl}/api/media/check`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, channel: "extension" }),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(body?.error?.message || `Chekkam media check failed (HTTP ${response.status}).`);
+  }
+  return body;
+}
+
+function isPublicHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 /** Injects the brand-styled result card into the page (P2-33).
  * kind is "risk" for a content check or "document" for a verify-document
  * result — result-card.js renders each with its own badge set. */
@@ -94,6 +130,22 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       await showResultInTab(tab.id, result, null, "document");
     } catch (err) {
       await showResultInTab(tab.id, null, err.message || String(err), "document");
+    }
+    return;
+  }
+
+  if (info.menuItemId === "chekkam-check-media") {
+    // A <video> element often exposes a short-lived CDN/blob src instead of
+    // its public post URL. Prefer the clicked link, then the page URL, so a
+    // registered TikTok/Facebook/official-publisher account can be matched.
+    const candidates = [info.linkUrl, info.pageUrl, info.srcUrl];
+    const mediaUrl = candidates.find(isPublicHttpUrl);
+    if (!mediaUrl) return;
+    try {
+      const result = await checkMediaSource(mediaUrl);
+      await showResultInTab(tab.id, result, null, "media");
+    } catch (err) {
+      await showResultInTab(tab.id, null, err.message || String(err), "media");
     }
     return;
   }
